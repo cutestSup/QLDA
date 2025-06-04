@@ -1,0 +1,56 @@
+# 🕒 TimeSync Backend - Hướng dẫn sử dụng
+
+Đây là project Node.js backend cho ứng dụng quản lý thời gian "Time Sync". Hệ thống sử dụng MongoDB và JWT để xử lý người dùng, to-do list, lịch trình và thông báo.
+
+## ✅ Yêu cầu cài đặt
+- Node.js >= 14
+- MongoDB (chạy local hoặc Atlas)
+
+## 📁 Cấu trúc thư mục
+```
+timesync-backend/
+├── .env
+├── server.js
+├── config/
+│   └── db.config.js
+├── middlewares/
+│   └── auth.middleware.js
+├── models/
+│   ├── user.model.js
+│   ├── task.model.js
+│   ├── event.model.js
+│   ├── category.model.js
+│   └── notification.model.js
+├── routes/
+│   ├── user.route.js
+│   ├── task.route.js
+│   ├── event.route.js
+│   ├── category.route.js
+│   └── notification.route.js
+```
+
+## ⚙️ Cấu hình môi trường
+File `.env` ví dụ:
+```
+MONGO_URI=mongodb://localhost:27017/timesync
+JWT_SECRET=your_jwt_secret
+```
+
+## ▶️ Khởi động
+```bash
+npm install
+npm run dev
+```
+
+## 🚀 API chính
+| Method | Endpoint | Mô tả |
+|--------|----------|------|
+| POST | /api/users/register | Đăng ký |
+| POST | /api/users/login | Đăng nhập |
+| CRUD | /api/tasks | Công việc |
+| CRUD | /api/events | Lịch trình |
+| CRUD | /api/categories | Danh mục |
+| CRUD | /api/notifications | Thông báo |
+
+## 📬 Liên hệ hỗ trợ
+Nếu bạn cần giúp triển khai, test API hoặc tích hợp frontend, hãy để lại yêu cầu nhé!
