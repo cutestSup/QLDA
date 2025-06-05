@@ -13,6 +13,8 @@ Content-Type: application/json
     "password": "password123"
 }
 
+###
+
 # @name login
 POST {{baseUrl}}/users/login
 Content-Type: application/json
@@ -24,7 +26,7 @@ Content-Type: application/json
 
 ### Calendar Management
 
-# Create new calendar
+# @name createCalendar
 POST {{baseUrl}}/calendar/calendars
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -36,13 +38,15 @@ Authorization: Bearer {{token}}
     "time_zone": "Asia/Ho_Chi_Minh"
 }
 
-# Get all calendars
+###
+
+# @name getCalendars
 GET {{baseUrl}}/calendar/calendars
 Authorization: Bearer {{token}}
 
 ### Events
 
-# Create recurring event
+# @name createRecurringEvent
 POST {{baseUrl}}/events
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -56,7 +60,7 @@ Authorization: Bearer {{token}}
     "is_recurring": true,
     "recurrence_rule": "FREQ=WEEKLY;BYDAY=MO;COUNT=10",
     "color": "#4285F4",
-    "calendar_id": 1,
+    "calendar_id": {{createCalendar.response.body.id}},
     "video_link": "https://meet.google.com/abc-defg-hij",
     "notifications": [
         { "type": "email", "minutes": 30 },
@@ -74,7 +78,9 @@ Authorization: Bearer {{token}}
     ]
 }
 
-# Create all-day event
+###
+
+# @name createAllDayEvent
 POST {{baseUrl}}/events
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -84,37 +90,48 @@ Authorization: Bearer {{token}}
     "all_day": true,
     "start_time": "2025-06-10",
     "end_time": "2025-06-10",
-    "calendar_id": 1,
+    "calendar_id": {{createCalendar.response.body.id}},
     "color": "#0B8043",
     "busy_status": "free"
 }
 
 ### Calendar Views
 
-# Get day view with timezone
+# @name getDayView
 GET {{baseUrl}}/calendar/view?type=day&start=2025-06-05&timezone=Asia/Ho_Chi_Minh
 Authorization: Bearer {{token}}
 
-# Get week view for specific calendars
-GET {{baseUrl}}/calendar/view?type=week&start=2025-06-02&calendars=1,2&expandRecurring=true
+###
+
+# @name getWeekView
+GET {{baseUrl}}/calendar/view?type=week&start=2025-06-02&calendars={{createCalendar.response.body.id}}&expandRecurring=true
 Authorization: Bearer {{token}}
 
-# Get month view grouped by date
+###
+
+# @name getMonthView
 GET {{baseUrl}}/calendar/view?type=month&start=2025-06-01&grouped=true
 Authorization: Bearer {{token}}
 
-# Get agenda view
+###
+
+# @name getAgendaView
 GET {{baseUrl}}/calendar/view?type=agenda&start=2025-06-01&end=2025-07-01
 Authorization: Bearer {{token}}
 
 ### Event Guest Management
 
-# Get event guests
-GET {{baseUrl}}/calendar/events/1/guests
+# @name getEventGuests
+GET {{baseUrl}}/calendar/events/{{createRecurringEvent.response.body.id}}/guests
 Authorization: Bearer {{token}}
 
-# Update guest response
-PATCH {{baseUrl}}/calendar/events/1/guests/1
+# Store guest id from previous response
+@guestId = {{getEventGuests.response.body.[0].id}}
+
+###
+
+# @name updateGuestResponse
+PATCH {{baseUrl}}/calendar/events/{{createRecurringEvent.response.body.id}}/guests/{{guestId}}
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -125,14 +142,14 @@ Authorization: Bearer {{token}}
 
 ### Free/Busy Information
 
-# Get free/busy info
-GET {{baseUrl}}/calendar/freebusy?start=2025-06-01T00:00:00Z&end=2025-06-07T23:59:59Z&calendars=1,2
+# @name getFreeBusy
+GET {{baseUrl}}/calendar/freebusy?start=2025-06-01T00:00:00Z&end=2025-06-07T23:59:59Z&calendars={{createCalendar.response.body.id}}
 Authorization: Bearer {{token}}
 
 ### Calendar Sharing
 
-# Share calendar with another user
-POST {{baseUrl}}/calendar/1/share
+# @name shareCalendar
+POST {{baseUrl}}/calendar/{{createCalendar.response.body.id}}/share
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -142,17 +159,30 @@ Authorization: Bearer {{token}}
     "expiresAt": "2024-12-31T23:59:59Z"
 }
 
-# Accept calendar share invitation
-@invitation_token = your_invitation_token_here
+# Store invitation token from previous response
+@invitation_token = {{shareCalendar.response.body.invitation_token}}
+
+###
+
+# @name acceptShare
 POST {{baseUrl}}/calendar/share/{{invitation_token}}/accept
 Authorization: Bearer {{token}}
 
-# Get shared calendars
+###
+
+# @name getSharedCalendars
 GET {{baseUrl}}/calendar/shared
 Authorization: Bearer {{token}}
 
-# Update sharing settings
-PUT {{baseUrl}}/calendar/1/share/1
+###
+
+# Store share id from previous response
+@shareId = {{getSharedCalendars.response.body.[0].id}}
+
+###
+
+# @name updateSharing
+PUT {{baseUrl}}/calendar/{{createCalendar.response.body.id}}/share/{{shareId}}
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -165,19 +195,21 @@ Authorization: Bearer {{token}}
     }
 }
 
-# Remove calendar sharing
-DELETE {{baseUrl}}/calendar/1/share/1
+# @name removeSharing
+DELETE {{baseUrl}}/calendar/{{createCalendar.response.body.id}}/share/{{shareId}}
 Authorization: Bearer {{token}}
 
 ### Calendar Sync
 
-# Get sync token
-GET {{baseUrl}}/calendar/1/sync
+# @name getSyncToken
+GET {{baseUrl}}/calendar/{{createCalendar.response.body.id}}/sync
 Authorization: Bearer {{token}}
 
-# Set your sync token here
-@sync_token = your_sync_token_here
+# Store sync token from previous response
+@sync_token = {{getSyncToken.response.body.sync_token}}
 
-# Get calendar changes
-GET {{baseUrl}}/calendar/1/changes?syncToken={{sync_token}}
+###
+
+# @name getChanges
+GET {{baseUrl}}/calendar/{{createCalendar.response.body.id}}/changes?syncToken={{sync_token}}
 Authorization: Bearer {{token}}
