@@ -1,24 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const Task = require("../models/task.model");
-const Category = require("../models/category.model");
+const Task = require("../models/Task");
+const { Op } = require("sequelize");
 
-// Get all tasks or search with filters
+// Get all tasks or filter by date
 router.get("/", async (req, res) => {
   try {
-    const where = { userId: req.user.id };
+    const where = { user_id: req.user.id };
     const filters = req.query;
 
-    // Apply date filters if provided in query params
     if (filters.year) where.year = parseInt(filters.year);
-    if (filters.month) where.month = parseInt(filters.month); 
+    if (filters.month) where.month = parseInt(filters.month);
     if (filters.day) where.day = parseInt(filters.day);
-    if (filters.categoryId) where.categoryId = parseInt(filters.categoryId);
+    if (filters.category) where.category = filters.category;
 
     const tasks = await Task.findAll({
       where,
-      include: [{ model: Category, as: 'category' }],
-      order: [['dueDate', 'ASC']]
+      order: [['due_date', 'ASC']]
     });
     res.json(tasks);
   } catch (err) {
@@ -29,20 +27,20 @@ router.get("/", async (req, res) => {
 // Create new task
 router.post("/", async (req, res) => {
   try {
-    const maxTask = await Task.findOne({
-      order: [['id', 'DESC']]
-    });
-    const nextId = req.body.id || (maxTask ? maxTask.id + 1 : 1);
-
-    const dueDate = new Date(req.body.dueDate);
-    const task = await Task.create({ 
-      id: nextId,
-      ...req.body, 
-      userId: req.user.id,
+    const { title, description, due_date, category } = req.body;
+    
+    const dueDate = new Date(due_date);
+    const task = await Task.create({
+      title,
+      description,
+      due_date,
+      category,
+      user_id: req.user.id,
       year: dueDate.getFullYear(),
       month: dueDate.getMonth() + 1,
       day: dueDate.getDate()
     });
+
     res.status(201).json(task);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -55,9 +53,8 @@ router.get("/:id", async (req, res) => {
     const task = await Task.findOne({
       where: { 
         id: req.params.id,
-        userId: req.user.id
-      },
-      include: [{ model: Category, as: 'category' }]
+        user_id: req.user.id
+      }
     });
     if (!task) {
       return res.status(404).json({ error: "Task not found" });
@@ -74,7 +71,7 @@ router.put("/:id", async (req, res) => {
     const [updated] = await Task.update(req.body, {
       where: { 
         id: req.params.id,
-        userId: req.user.id
+        user_id: req.user.id
       }
     });
     if (!updated) {
@@ -93,7 +90,7 @@ router.delete("/:id", async (req, res) => {
     const deleted = await Task.destroy({
       where: { 
         id: req.params.id,
-        userId: req.user.id
+        user_id: req.user.id
       }
     });
     if (!deleted) {
@@ -113,7 +110,7 @@ router.patch("/:id/complete", async (req, res) => {
       {
         where: { 
           id: req.params.id,
-          userId: req.user.id
+          user_id: req.user.id
         }
       }
     );
@@ -123,7 +120,7 @@ router.patch("/:id/complete", async (req, res) => {
     const task = await Task.findByPk(req.params.id);
     res.json(task);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 

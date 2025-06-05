@@ -1,39 +1,35 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db.config');
+const bcrypt = require("bcryptjs");
+const db = require("../config/db.config")();
 
-const User = sequelize.define('User', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    allowNull: false
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    profilePicture: { type: String, default: "" },
   },
-  name: {
-    type: DataTypes.STRING(100),
-    allowNull: false
-  },
-  email: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-    unique: true
-  },
-  password: {
-    type: DataTypes.STRING(255),
-    allowNull: false
-  },
-  profilePicture: {
-    type: DataTypes.STRING(255),
-    field: 'profile_picture',
-    allowNull: true
-  }
-}, {
-  tableName: 'users',
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
-});
+  { timestamps: true }
+);
 
-User.prototype.validatePassword = function(password) {
-  return this.password === password;
+const userModel = {
+  create: async (userData) => {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const [result] = await db.execute(
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+      [userData.username, userData.email, hashedPassword]
+    );
+    return result.insertId;
+  },
+
+  findByEmail: async (email) => {
+    const [rows] = await db.execute("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]);
+    return rows[0];
+  },
+
+  // Add other user-related database operations
 };
 
-module.exports = User;
+module.exports = mongoose.model("User", userSchema);
+module.exports = userModel;

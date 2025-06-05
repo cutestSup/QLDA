@@ -1,0 +1,49 @@
+-- Add sync columns to calendars table
+ALTER TABLE calendars 
+ADD COLUMN IF NOT EXISTS sync_token VARCHAR(32),
+ADD COLUMN IF NOT EXISTS last_sync_time TIMESTAMP;
+
+-- Add busy_status to events table
+ALTER TABLE events
+ADD COLUMN IF NOT EXISTS busy_status ENUM('busy', 'free', 'tentative') NOT NULL DEFAULT 'busy';
+
+-- Add timestamps to all tables if not exists
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE calendars
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE events
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE tasks
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE notifications
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+-- Add foreign key constraints if not exists
+ALTER TABLE events
+ADD CONSTRAINT IF NOT EXISTS fk_event_calendar
+FOREIGN KEY (calendar_id) REFERENCES calendars(id)
+ON DELETE CASCADE;
+
+ALTER TABLE tasks
+ADD CONSTRAINT IF NOT EXISTS fk_task_calendar
+FOREIGN KEY (calendar_id) REFERENCES calendars(id)
+ON DELETE CASCADE;
+
+-- Add indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_calendar_sync ON calendars(sync_token);
+CREATE INDEX IF NOT EXISTS idx_calendar_last_sync ON calendars(last_sync_time);
+CREATE INDEX IF NOT EXISTS idx_event_busy_status ON events(busy_status);
+CREATE INDEX IF NOT EXISTS idx_event_start_time ON events(start_time);
+CREATE INDEX IF NOT EXISTS idx_event_end_time ON events(end_time);
+CREATE INDEX IF NOT EXISTS idx_task_due_date ON tasks(due_date);
+CREATE INDEX IF NOT EXISTS idx_notification_time ON notifications(time);

@@ -1,140 +1,183 @@
 @baseUrl = http://localhost:5000/api
-@token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzQ5MTExNDYyLCJleHAiOjE3NDk3MTYyNjJ9.1k3mlbJIVPEeqgkurJOAxaeXhppkFfrIQ-owRA0cvWo"
-### Register new user
+@token = {{login.response.body.token}} 
+
+### Auth
+
+# @name register
 POST {{baseUrl}}/users/register
 Content-Type: application/json
 
 {
-    "name": "Test User1",
-    "email": "test1@example.com",
+    "name": "Test User",
+    "email": "test@example.com",
     "password": "password123"
 }
 
-### Login user
+# @name login
 POST {{baseUrl}}/users/login
 Content-Type: application/json
 
 {
-    "email": "test1@example.com",
+    "email": "test@example.com",
     "password": "password123"
 }
 
-### Get user profile
-GET {{baseUrl}}/users/profile
-Authorization: Bearer {{token}}
+### Calendar Management
 
-### Create new category
-POST {{baseUrl}}/categories
-Authorization: Bearer {{token}}
+# Create new calendar
+POST {{baseUrl}}/calendar/calendars
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-    "name": "Work",
-    "color": "#FF5733"
+    "name": "Work Calendar",
+    "color": "#4285F4",
+    "description": "My work schedule",
+    "time_zone": "Asia/Ho_Chi_Minh"
 }
 
-### Get all categories
-GET {{baseUrl}}/categories
+# Get all calendars
+GET {{baseUrl}}/calendar/calendars
 Authorization: Bearer {{token}}
 
-### Get category by ID
-GET {{baseUrl}}/categories/7
-Authorization: Bearer {{token}}
+### Events
 
-### Update category
-PUT {{baseUrl}}/categories/1
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-    "name": "Updated Work",
-    "color": "#33FF57"
-}
-
-### Delete category
-DELETE {{baseUrl}}/categories/1
-Authorization: Bearer {{token}}
-
-### Create new task
-POST {{baseUrl}}/tasks
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-    "title": "Complete Project",
-    "description": "Finish the TimeSync project",
-    "dueDate": "2025-06-10T10:00:00Z",
-    "categoryId": 1
-}
-
-### Get all tasks
-GET {{baseUrl}}/tasks
-Authorization: Bearer {{token}}
-
-### Get task by ID
-GET {{baseUrl}}/tasks/1
-Authorization: Bearer {{token}}
-
-### Update task
-PUT {{baseUrl}}/tasks/1
-Authorization: Bearer {{token}}
-Content-Type: application/json
-
-{
-    "title": "Updated Project",
-    "description": "Updated description",
-    "completed": true
-}
-
-### Delete task
-DELETE {{baseUrl}}/tasks/1
-Authorization: Bearer {{token}}
-
-### Create new event
+# Create recurring event
 POST {{baseUrl}}/events
-Authorization: Bearer {{token}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-    "title": "Team Meeting",
-    "description": "Weekly team sync",
-    "startTime": "2025-06-06T09:00:00Z",
-    "endTime": "2025-06-06T10:00:00Z",
-    "location": "Meeting Room 1"
+    "title": "Weekly Team Meeting",
+    "description": "Regular team sync-up",
+    "location": "Meeting Room 1",
+    "start_time": "2025-06-05T09:00:00+07:00",
+    "end_time": "2025-06-05T10:00:00+07:00",
+    "is_recurring": true,
+    "recurrence_rule": "FREQ=WEEKLY;BYDAY=MO;COUNT=10",
+    "color": "#4285F4",
+    "calendar_id": 1,
+    "video_link": "https://meet.google.com/abc-defg-hij",
+    "notifications": [
+        { "type": "email", "minutes": 30 },
+        { "type": "popup", "minutes": 10 }
+    ],
+    "attendees": [
+        {
+            "email": "colleague1@example.com",
+            "optional": false
+        },
+        {
+            "email": "colleague2@example.com",
+            "optional": true
+        }
+    ]
 }
 
-### Get all events
-GET {{baseUrl}}/events
-Authorization: Bearer {{token}}
-
-### Get event by ID
-GET {{baseUrl}}/events/1
-Authorization: Bearer {{token}}
-
-### Update event
-PUT {{baseUrl}}/events/1
-Authorization: Bearer {{token}}
+# Create all-day event
+POST {{baseUrl}}/events
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-    "title": "Updated Meeting",
-    "description": "Updated description",
-    "startTime": "2025-06-06T10:00:00Z",
-    "endTime": "2025-06-06T11:00:00Z"
+    "title": "Company Holiday",
+    "all_day": true,
+    "start_time": "2025-06-10",
+    "end_time": "2025-06-10",
+    "calendar_id": 1,
+    "color": "#0B8043",
+    "busy_status": "free"
 }
 
-### Delete event
-DELETE {{baseUrl}}/events/1
+### Calendar Views
+
+# Get day view with timezone
+GET {{baseUrl}}/calendar/view?type=day&start=2025-06-05&timezone=Asia/Ho_Chi_Minh
 Authorization: Bearer {{token}}
 
-### Get all notifications
-GET {{baseUrl}}/notifications
+# Get week view for specific calendars
+GET {{baseUrl}}/calendar/view?type=week&start=2025-06-02&calendars=1,2&expandRecurring=true
 Authorization: Bearer {{token}}
 
-### Mark notification as read
-PUT {{baseUrl}}/notifications/1/read
+# Get month view grouped by date
+GET {{baseUrl}}/calendar/view?type=month&start=2025-06-01&grouped=true
 Authorization: Bearer {{token}}
 
-### Delete notification
-DELETE {{baseUrl}}/notifications/1
+# Get agenda view
+GET {{baseUrl}}/calendar/view?type=agenda&start=2025-06-01&end=2025-07-01
+Authorization: Bearer {{token}}
+
+### Event Guest Management
+
+# Get event guests
+GET {{baseUrl}}/calendar/events/1/guests
+Authorization: Bearer {{token}}
+
+# Update guest response
+PATCH {{baseUrl}}/calendar/events/1/guests/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "response": "accepted",
+    "comment": "Looking forward to it!"
+}
+
+### Free/Busy Information
+
+# Get free/busy info
+GET {{baseUrl}}/calendar/freebusy?start=2025-06-01T00:00:00Z&end=2025-06-07T23:59:59Z&calendars=1,2
+Authorization: Bearer {{token}}
+
+### Calendar Sharing
+
+# Share calendar with another user
+POST {{baseUrl}}/calendar/1/share
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "email": "colleague@example.com",
+    "role": "writer",
+    "expiresAt": "2024-12-31T23:59:59Z"
+}
+
+# Accept calendar share invitation
+@invitation_token = your_invitation_token_here
+POST {{baseUrl}}/calendar/share/{{invitation_token}}/accept
+Authorization: Bearer {{token}}
+
+# Get shared calendars
+GET {{baseUrl}}/calendar/shared
+Authorization: Bearer {{token}}
+
+# Update sharing settings
+PUT {{baseUrl}}/calendar/1/share/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "role": "writer",
+    "notificationSettings": {
+        "event_created": true,
+        "event_updated": true,
+        "event_deleted": false
+    }
+}
+
+# Remove calendar sharing
+DELETE {{baseUrl}}/calendar/1/share/1
+Authorization: Bearer {{token}}
+
+### Calendar Sync
+
+# Get sync token
+GET {{baseUrl}}/calendar/1/sync
+Authorization: Bearer {{token}}
+
+# Set your sync token here
+@sync_token = your_sync_token_here
+
+# Get calendar changes
+GET {{baseUrl}}/calendar/1/changes?syncToken={{sync_token}}
 Authorization: Bearer {{token}}
