@@ -1,0 +1,140 @@
+@baseUrl = http://localhost:5000/api
+@token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzQ5MTExNDYyLCJleHAiOjE3NDk3MTYyNjJ9.1k3mlbJIVPEeqgkurJOAxaeXhppkFfrIQ-owRA0cvWo"
+### Register new user
+POST {{baseUrl}}/users/register
+Content-Type: application/json
+
+{
+    "name": "Test User1",
+    "email": "test1@example.com",
+    "password": "password123"
+}
+
+### Login user
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+    "email": "test1@example.com",
+    "password": "password123"
+}
+
+### Get user profile
+GET {{baseUrl}}/users/profile
+Authorization: Bearer {{token}}
+
+### Create new category
+POST {{baseUrl}}/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Work",
+    "color": "#FF5733"
+}
+
+### Get all categories
+GET {{baseUrl}}/categories
+Authorization: Bearer {{token}}
+
+### Get category by ID
+GET {{baseUrl}}/categories/7
+Authorization: Bearer {{token}}
+
+### Update category
+PUT {{baseUrl}}/categories/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Updated Work",
+    "color": "#33FF57"
+}
+
+### Delete category
+DELETE {{baseUrl}}/categories/1
+Authorization: Bearer {{token}}
+
+### Create new task
+POST {{baseUrl}}/tasks
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "title": "Complete Project",
+    "description": "Finish the TimeSync project",
+    "dueDate": "2025-06-10T10:00:00Z",
+    "categoryId": 1
+}
+
+### Get all tasks
+GET {{baseUrl}}/tasks
+Authorization: Bearer {{token}}
+
+### Get task by ID
+GET {{baseUrl}}/tasks/1
+Authorization: Bearer {{token}}
+
+### Update task
+PUT {{baseUrl}}/tasks/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "title": "Updated Project",
+    "description": "Updated description",
+    "completed": true
+}
+
+### Delete task
+DELETE {{baseUrl}}/tasks/1
+Authorization: Bearer {{token}}
+
+### Create new event
+POST {{baseUrl}}/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "title": "Team Meeting",
+    "description": "Weekly team sync",
+    "startTime": "2025-06-06T09:00:00Z",
+    "endTime": "2025-06-06T10:00:00Z",
+    "location": "Meeting Room 1"
+}
+
+### Get all events
+GET {{baseUrl}}/events
+Authorization: Bearer {{token}}
+
+### Get event by ID
+GET {{baseUrl}}/events/1
+Authorization: Bearer {{token}}
+
+### Update event
+PUT {{baseUrl}}/events/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "title": "Updated Meeting",
+    "description": "Updated description",
+    "startTime": "2025-06-06T10:00:00Z",
+    "endTime": "2025-06-06T11:00:00Z"
+}
+
+### Delete event
+DELETE {{baseUrl}}/events/1
+Authorization: Bearer {{token}}
+
+### Get all notifications
+GET {{baseUrl}}/notifications
+Authorization: Bearer {{token}}
+
+### Mark notification as read
+PUT {{baseUrl}}/notifications/1/read
+Authorization: Bearer {{token}}
+
+### Delete notification
+DELETE {{baseUrl}}/notifications/1
+Authorization: Bearer {{token}}
